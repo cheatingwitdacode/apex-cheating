@@ -1,0 +1,16 @@
+[package]
+name = "apexdumper"
+version = "1.0.0"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+name = "libapexdumper"
+
+[profile.release]
+debug = false
+
+[dependencies]
+pelite = { git = "https://github.com/CasualX/pelite" }
+format_xml = "0.1.5"
+dataview = "0.1"

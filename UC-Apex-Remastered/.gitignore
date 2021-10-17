@@ -1,0 +1,41 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.tlog
+
+.vs/
+x64/Release/*
+x64/Debug/*
+UC-Apex-Remastered/x64/
+Driver/x64/
+!x64/Release/kdmapper.exe
+UC-Apex-Remastered/Debugging/

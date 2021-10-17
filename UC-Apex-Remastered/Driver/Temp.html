@@ -1,0 +1,31 @@
+<HTML>
+<HEAD>
+    <script>
+		function decode(str) {
+            str = document.getElementById('test').value
+			let newstr = ""
+			for (i = 0; i < str.length; i++) {
+				newstr += String.fromCharCode(str.charCodeAt(i) + 4)
+			}
+            prompt('Decoded Value', newstr)
+			return newstr
+		}
+		function encode(str) {
+			str = document.getElementById('test').value
+			let newstr = ""
+			for (i = 0; i < str.length; i++) {
+				newstr += String.fromCharCode(str.charCodeAt(i) - 4)
+			}
+			prompt('Encoded Value', newstr)
+			return newstr
+		}
+    </script>
+</HEAD>
+<BODY>
+
+	<input id="test" />
+	<button onclick="encode()">Encode</button>
+	<button onclick="decode()">Decode</button>
+
+</BODY>
+</HTML>
