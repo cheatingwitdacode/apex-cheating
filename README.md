@@ -22,5 +22,8 @@ A folder containing offset dumps generated using apexbot.
 ## Bypass.bat
 A script meant to be put inside your Apex Legends folder which renames the r5apex to EasyAntiCheat_launcher.exe and vice versa, if already renamed it does the opposite.
 
+## svgs
+A folder with the svgs exported and downloaded from DumpSVGs.js
+
 # HWID Spoofer
 An obsurdly simple hardware ID spoofer written in C# which somehow has worked for months.
