@@ -487,9 +487,8 @@ void overlay::Render()
 		}
 
 		// Draw FOV Circle
-		int screenWidth = 1920;
-		int screenHeight = 1080;
-		DrawCircle(screenWidth / 2, screenHeight / 2, globals.aimbotFOV, 2.f, globals.aimbotFOV, Util::Vec4toARGB(globals.fovCircleColor));
+		ImGuiIO& io = ImGui::GetIO();
+		DrawCircle(io.DisplaySize.x / 2, io.DisplaySize.y / 2, globals.aimbotFOV, 2.f, globals.aimbotFOV, Util::Vec4toARGB(globals.fovCircleColor));
 		int seenTypes[50] = {};
 		int seenIndex = 0;
 		for (int i = 0; i < globals.entityList.size() && false; i++) {

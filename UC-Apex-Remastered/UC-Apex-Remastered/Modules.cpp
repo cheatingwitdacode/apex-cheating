@@ -391,9 +391,10 @@ void Modules::Aimbot()
     }
     if ((!globals.aimbot || !Player::IsPlayer(globals.localPlayer)) && !GetAsyncKeyState(aimKey))
         return;
-    int screenWeight = 1920; //// Config
-    // In-game resolution
-    int screenHeight = 1080;
+
+    ImGuiIO& io = ImGui::GetIO();
+    float screenWeight = io.DisplaySize.x;
+    float screenHeight = io.DisplaySize.y;
 
     // Variables
     vec2 crosshair = { screenWeight / 2, screenHeight / 2 };
@@ -405,30 +406,6 @@ void Modules::Aimbot()
     float closestDist = 99999.f;
     vec2 closestPlayer = { 99999.f, 99999.f };
     vec3 closestPlayerVec3 = { 0.f, 0.f, 0.f };
-    // targetEnt loop starts here
-
-    //for (int i = 0; i < globals.players.size(); i++) {
-    //    Player target;
-    //    try
-    //    {
-    //        target = globals.players.at(i);
-    //    }
-    //    catch (const std::out_of_range& oor)
-    //    {
-    //        break;
-    //    }
-
-    //    if (!target.visible)
-    //        continue;
-
-    //    vec3 targetPos = target.GetBone(7);
-    //    vec2 screenPos;
-    //    if (!Util::WorldToScreen(targetPos, screenPos))
-    //        continue; // Target isn't on the screen, This should be handled by target.visible but who knows.
-
-    //    if (Util::Dist2D({ 1920 / 2, 1080 / 2 }, screenPos) > 10.f);
-    //        continue; // Target
-    //}
 
     /*
     Bones:
@@ -492,10 +469,10 @@ void Modules::Aimbot()
             if (entNewVisTime != entOldVisTime[i]) {
                 // If enemy not knocked
                 if (entKnockedState == 0 || entSignifier == "npc_dummie") {
-                    if (Util::Dist2D({ 1920 / 2, 1080 / 2 }, screenAimPos) < globals.aimbotFOV && Util::Dist2D({ 1920 / 2, 1080 / 2 }, screenAimPos) < closestDist) {
+                    if (Util::Dist2D({ screenWeight / 2, screenHeight / 2 }, screenAimPos) < globals.aimbotFOV && Util::Dist2D({ screenWeight / 2, screenHeight / 2 }, screenAimPos) < closestDist) {
                         closestPlayer = screenAimPos;
                         closestPlayerVec3 = aimPos;
-                        closestDist = Util::Dist2D({ 1920 / 2, 1080 / 2 }, screenAimPos);
+                        closestDist = Util::Dist2D({ screenWeight / 2, screenHeight / 2 }, screenAimPos);
                     }
                 }
                 entOldVisTime[i] = entNewVisTime;
