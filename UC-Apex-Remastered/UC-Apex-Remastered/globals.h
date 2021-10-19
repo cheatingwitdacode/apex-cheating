@@ -91,10 +91,7 @@ struct globalVars
 	bool rapidFire = true;
 	float rapidFireSpeed = 2.f;
 
-	int testInt = 0;
-	bool testBool = false;
-	float testFloat = 1.f;
-	uintptr_t testPtr = 0x01ccf078 - 0x100 + 0x18;
+	uintptr_t testPtr = 0x0;
 };
 
 extern KDriver Driver;

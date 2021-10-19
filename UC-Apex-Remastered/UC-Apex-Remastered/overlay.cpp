@@ -238,11 +238,10 @@ void DrawImGui()
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
 		/* -------------------------------------- Main Window Start ------------------------------------ */
 		ImGui::Begin(xorstr_("Main"), 0);
-		ImGui::InputInt(xorstr_("Test Int"), &globals.testInt);
-		ImGui::SliderFloat(xorstr_("Test Float"), &globals.rapidFireSpeed, 1.f, 3.f);
-		if (ImGui::Button(xorstr_("Test Button"))) {
-			globals.testBool = !globals.testBool;
-		}
+		
+		ImGui::Spacing();
+		ImGui::Checkbox(xorstr_("Rapid Fire"), &globals.rapidFire);
+		ImGui::SliderFloat(xorstr_("Rapid Fire Speed"), &globals.rapidFireSpeed, 1.f, 2.f);
 
 		ImGui::Spacing();
 		ImGui::Checkbox(xorstr_("Third Person"), &globals.thirdPerson);
@@ -287,7 +286,7 @@ void DrawImGui()
 		// Chams section
 		ImGui::Combo(xorstr_("Style"), &globals.playerGlowStyle, globals.playerGlowStyles, IM_ARRAYSIZE(globals.playerGlowStyles));
 		ImGui::Checkbox(xorstr_("Glow"), &globals.playerGlow);
-		if (globals.playerGlowStyles[globals.playerGlowStyle] == "Normal") {
+		if (globals.playerGlowStyles[globals.playerGlowStyle] == xorstr_("Normal")) {
 			ImGui::ColorEdit3(xorstr_("Glow Color"), (float*)&globals.playerGlowColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoTooltip);
 			ImGui::Checkbox(xorstr_("Through Walls"), &globals.playerGlowThroughWalls);
 		}
@@ -350,7 +349,7 @@ bool getClassNameX(uintptr_t ent, std::string& className)
 	// Finally grab some bytes to be interpreted as a nul terminated c-string.
 	className = Driver.ReadString(clientClass.pNetworkName, 128);
 	if (className.length() == 128)
-		className = "Unknown";
+		className = xorstr_("Unknown");
 	return true;
 }
 
@@ -491,7 +490,7 @@ void overlay::Render()
 		DrawCircle(io.DisplaySize.x / 2, io.DisplaySize.y / 2, globals.aimbotFOV, 2.f, globals.aimbotFOV, Util::Vec4toARGB(globals.fovCircleColor));
 		int seenTypes[50] = {};
 		int seenIndex = 0;
-		for (int i = 0; i < globals.entityList.size() && false; i++) {
+		for (size_t i = 0; i < globals.entityList.size() && false; i++) {
 			uintptr_t ent = globals.entityList[i];
 			if (ent == NULL) continue;
 
@@ -511,79 +510,79 @@ void overlay::Render()
 
 			if (
 				// Firing Range
-				className == "ScriptMoverLightweight" ||
-				className == "CPropSurvival" ||
-				className == "CBaseEntity" ||
-				className == "CDynamicProp" ||
-				className == "CWeaponX" || // Weapon in players hands
-				className == "CPlayerWaypoint" ||
-				className == "CBaseAnimating" ||
-				className == "CGrappleHook" ||
-				className == "CScriptNetData_SNDC_PLAYER_GLOBAL" || // wtf are these
-				className == "CScriptNetData_SNDC_PLAYER_EXCLUSIVE" ||
-				className == "CInfoTarget" ||
-				className == "CAI_BaseNPC" ||
-				className == "CZiplineEnd" ||
-				className == "CZipline" ||
-				className == "CAmbientGeneric" ||
-				className == "CSkyCamera" ||
-				className == "CParticleSystem" ||
-				className == "CPointCamera" ||
-				className == "CCascadeLight" ||
-				className == "CTriggerNoZipline" ||
-				className == "CEntityLinkPage" ||
-				className == "CImportantOnEntSound" ||
-				className == "Titan_Cockpit" ||
-				className == "CPredictedFirstPersonProxy" ||
-				className == "CTeam" ||
-				className == "CBaseViewModel" ||
-				className == "CWorld" ||
-				className == "CFirstPersonProxy" ||
-				className == "CEntityDissolve" ||
-				className == "CPhysicsProp" ||
-				className == "CGlobalNonRewinding" ||
-				className == "CColorCorrection" ||
-				className == "CScriptNetDataGlobal" ||
-				className == "CScriptNetDataGlobalNonRewind" ||
-				className == "CBaseGrenade" || // All grenades(Thermite, Frag, Arc Star)
-				className == "CRopeKeyframe" || // Exists while using Pathfinder ultimate
-				className == "CScriptProp" ||
-				className == "CScriptTraceVolume" ||
-				className == "CScriptMover" ||
-				className == "CInfoPlacementHelper" ||
-				className == "CCrossbowBolt" || // All(?) bullets
-				className == "CStatusEffectPlugin" ||
-				className == "CMissile" || // Missiles from ultimates(While in air)
-				className == "CVortexSphere" ||
-				className == "CPlayer" ||
+				className == xorstr_("ScriptMoverLightweight") ||
+				className == xorstr_("CPropSurvival") ||
+				className == xorstr_("CBaseEntity") ||
+				className == xorstr_("CDynamicProp") ||
+				className == xorstr_("CWeaponX") || // Weapon in players hands
+				className == xorstr_("CPlayerWaypoint") ||
+				className == xorstr_("CBaseAnimating") ||
+				className == xorstr_("CGrappleHook") ||
+				className == xorstr_("CScriptNetData_SNDC_PLAYER_GLOBAL") || // wtf are these
+				className == xorstr_("CScriptNetData_SNDC_PLAYER_EXCLUSIVE") ||
+				className == xorstr_("CInfoTarget") ||
+				className == xorstr_("CAI_BaseNPC") ||
+				className == xorstr_("CZiplineEnd") ||
+				className == xorstr_("CZipline") ||
+				className == xorstr_("CAmbientGeneric") ||
+				className == xorstr_("CSkyCamera") ||
+				className == xorstr_("CParticleSystem") ||
+				className == xorstr_("CPointCamera") ||
+				className == xorstr_("CCascadeLight") ||
+				className == xorstr_("CTriggerNoZipline") ||
+				className == xorstr_("CEntityLinkPage") ||
+				className == xorstr_("CImportantOnEntSound") ||
+				className == xorstr_("Titan_Cockpit") ||
+				className == xorstr_("CPredictedFirstPersonProxy") ||
+				className == xorstr_("CTeam") ||
+				className == xorstr_("CBaseViewModel") ||
+				className == xorstr_("CWorld") ||
+				className == xorstr_("CFirstPersonProxy") ||
+				className == xorstr_("CEntityDissolve") ||
+				className == xorstr_("CPhysicsProp") ||
+				className == xorstr_("CGlobalNonRewinding") ||
+				className == xorstr_("CColorCorrection") ||
+				className == xorstr_("CScriptNetDataGlobal") ||
+				className == xorstr_("CScriptNetDataGlobalNonRewind") ||
+				className == xorstr_("CBaseGrenade") || // All grenades(Thermite, Frag, Arc Star)
+				className == xorstr_("CRopeKeyframe") || // Exists while using Pathfinder ultimate
+				className == xorstr_("CScriptProp") ||
+				className == xorstr_("CScriptTraceVolume") ||
+				className == xorstr_("CScriptMover") ||
+				className == xorstr_("CInfoPlacementHelper") ||
+				className == xorstr_("CCrossbowBolt") || // All(?) bullets
+				className == xorstr_("CStatusEffectPlugin") ||
+				className == xorstr_("CMissile") || // Missiles from ultimates(While in air)
+				className == xorstr_("CVortexSphere") ||
+				className == xorstr_("CPlayer") ||
 				// World's Edge
-				className == "CPropDoor" || // Door
-				className == "CTriggerSlip" ||
-				className == "CTriggerNoGrapple" ||
-				className == "CDeathBoxProp" || // Death Box
-				className == "CLootRoller" ||
-				className == "CTriggerNoObjectPlacement" ||
-				className == "CBoneFollower" ||
-				className == "CBaseTrigger" ||
-				className == "CScriptMoverTrainNode" ||
-				className == "CScriptNetData_SNDC_DEATH_BOX" ||
-				className == "CFuncBrush" ||
-				className == "CLootGrabber" ||
-				className == "CTriggerCylinderHeavy" ||
-				className == "CTriggerUpdraft" ||
-				className == "CDynamicPropLightweight" ||
-				className == "CShieldProp" ||
-				className == "CProjectile" ||
-				className == "CNPC_Dropship" || // Respawn Ship(?)
+				className == xorstr_("CPropDoor") || // Door
+				className == xorstr_("CTriggerSlip") ||
+				className == xorstr_("CTriggerNoGrapple") ||
+				className == xorstr_("CDeathBoxProp") || // Death Box
+				className == xorstr_("CLootRoller") ||
+				className == xorstr_("CTriggerNoObjectPlacement") ||
+				className == xorstr_("CBoneFollower") ||
+				className == xorstr_("CBaseTrigger") ||
+				className == xorstr_("CScriptMoverTrainNode") ||
+				className == xorstr_("CScriptNetData_SNDC_DEATH_BOX") ||
+				className == xorstr_("CFuncBrush") ||
+				className == xorstr_("CLootGrabber") ||
+				className == xorstr_("CTriggerCylinderHeavy") ||
+				className == xorstr_("CTriggerUpdraft") ||
+				className == xorstr_("CDynamicPropLightweight") ||
+				className == xorstr_("CShieldProp") ||
+				className == xorstr_("CProjectile") ||
+				className == xorstr_("CNPC_Dropship") || // Respawn Ship(?)
 				// Kings Canyon
-				className == "CFuncBrushLightweight" || // Appeared in Selection Menu
-				className == "CBreakableProp" ||
-				className == "CPlayerDecoy" ||
-				className == "CPlayerVehicle" || // Not sure how this existed on Kings Canyon
-				className == "CTurret" ||
-				className == "CKnockBack" ||
-				className == "CZiplinePhysics" ||
-				className == "CScriptNetData_SNDC_PLAYER_EXCLUSIVE_EXPANDED"
+				className == xorstr_("CFuncBrushLightweight") || // Appeared in Selection Menu
+				className == xorstr_("CBreakableProp") ||
+				className == xorstr_("CPlayerDecoy") ||
+				className == xorstr_("CPlayerVehicle") || // Not sure how this existed on Kings Canyon
+				className == xorstr_("CTurret") ||
+				className == xorstr_("CKnockBack") ||
+				className == xorstr_("CZiplinePhysics") ||
+				className == xorstr_("CScriptNetData_SNDC_PLAYER_EXCLUSIVE_EXPANDED")
 			) continue;
 
 			//printf("%s\n", className.c_str());

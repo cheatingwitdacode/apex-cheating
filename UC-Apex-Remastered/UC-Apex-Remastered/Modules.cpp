@@ -1,4 +1,4 @@
-#pragma check_stack(off)  // place at top header to cover all the functions
+#pragma check_stack(off)
 #include "Modules.h"
 #include "Item_IDs.h"
 #include "prediction.h"
@@ -8,17 +8,43 @@
 
 vec3 oldPunch = { 0.f, 0.f, 0.f };
 int lastKey = 0;
+bool debug = true;
+
+void timeFunc(void (*func)(), std::string name = "function")
+{
+    std::chrono::time_point start = std::chrono::high_resolution_clock::now();
+    func();
+    std::chrono::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    double length = duration.count();
+    std::cout << name << " took " << length << " microseconds" << std::endl;
+}
 
 void Modules::Run()
 {
-    Modules::UpdateVars();
-    Modules::UpdateKeys();
-    Modules::ItemGlow();
-    Modules::NewPlayerGlow();
-    Modules::PlayerGlow();
-    Modules::ThirdPerson();
-    Modules::RapidFire();
-
+    if (debug)
+    {
+        system("cls");
+        timeFunc(Modules::UpdateVars, "Modules::UpdateVars()");
+        timeFunc(Modules::UpdateKeys, "Modules::UpdateKeys()");
+        timeFunc(Modules::ItemGlow, "Modules::ItemGlow()"); // This takes ~70 ms which is the main cause for the slowdown in this cheat, either put it in a
+                                                            // seperate thread(stupid idea) or actually fix it. It happens because we read 65,000 signatures
+                                                            // (2 reads each + loops bc readString)
+        timeFunc(Modules::NewPlayerGlow, "Modules::NewPlayerGlow()");
+        timeFunc(Modules::PlayerGlow, "Modules::PlayerGlow()");
+        timeFunc(Modules::ThirdPerson, "Modules::ThirdPerson()");
+        timeFunc(Modules::RapidFire, "Modules::RapidFire()");
+    }
+    else
+    {
+        Modules::UpdateVars();
+        Modules::UpdateKeys();
+        Modules::ItemGlow();
+        Modules::NewPlayerGlow();
+        Modules::PlayerGlow();
+        Modules::ThirdPerson();
+        Modules::RapidFire();
+    }
     /*
     // Theoretical spectator count...
     std::vector<uintptr_t> players = Player::GetPlayers();
@@ -70,7 +96,7 @@ bool getClassName(uintptr_t ent, std::string &className)
     // Finally grab some bytes to be interpreted as a nul terminated c-string.
     className = Driver.ReadString(clientClass.pNetworkName, 128);
     if (className.length() == 128)
-        className = "Unknown";
+        className = xorstr_("Unknown");
     return true;
 }
 
@@ -117,7 +143,6 @@ void getEnts()
 
 void Modules::UpdateVars()
 {
-    // update important global variables every ms
     globals.localPlayer = Driver.rpm<uintptr_t>(globals.moduleBase + OFFSET_LOCAL_ENT);
     globals.viewRenderer = Driver.rpm<uintptr_t>(globals.moduleBase + OFFSET_RENDER);
     getEnts();
@@ -167,28 +192,27 @@ void Modules::ItemGlow()
     if (!globals.itemGlow || !Player::IsPlayer(globals.localPlayer))
         return;
     
-    for (int i = 0; i < NUM_ENT_ENTRIES; i++) {
+    for (int i = 0; i < globals.entityList.size(); i++) {
         uintptr_t ent = globals.entityList[i];
         if (ent == NULL) continue;
 
         std::string signifer = Player::GetSignifier(ent);
-        if (signifer != "prop_death_box" && signifer != "prop_survival")
+        if (signifer != xorstr_("prop_death_box") && signifer != xorstr_("prop_survival"))
             continue;
 
-        if (globals.deathBoxESP && signifer == "prop_death_box") {
-            // TODO: Find the highest rarity item inside the death box and use that as an esp color.
-            Driver.wpm<int>(ent + 0x3C8, 1); // Glow Enable
-            Driver.wpm<int>(ent + 0x3D0, 2); // Through Walls
+        if (globals.deathBoxESP && signifer == xorstr_("prop_death_box")) {
+            Driver.wpm<int>(ent + OFFSET_GLOW_ENABLE, 1); // Glow Enable
+            Driver.wpm<int>(ent + OFFSET_GLOW_THROUGH_WALLS, 2); // Through Walls
             Driver.wpm<GlowMode>(ent + OFFSET_GLOW_MODE, { 0, 118, 127, 100 });
         }
 
         int itemID = Driver.rpm<int>(ent + OFFSET_SCRIPT_ID);
 
-        if (signifer == "prop_survival" && itemID >= 1 && itemID <= 240) // This has to be updated when items are added to Item_IDs.h
+        if (signifer == xorstr_("prop_survival") && itemID >= 1 && itemID <= 240) // This has to be updated when items are added to Item_IDs.h
         {
-            //if (Driver.rpm<int>(targetEnt + 0x3C8) == 1) return; // Doing this prevents updates to itemESP working -_- I hate coding so much
-            Driver.wpm<int>(ent + 0x3C8, 1); // Glow Enable
-            Driver.wpm<int>(ent + 0x3D0, 2); // Through Walls
+            //if (Driver.rpm<int>(targetEnt + OFFSET_GLOW_ENABLE) == 1) return; // Doing this prevents updates to itemESP working -_- I hate coding so much
+            Driver.wpm<int>(ent + OFFSET_GLOW_ENABLE, 1); // Glow Enable
+            Driver.wpm<int>(ent + OFFSET_GLOW_THROUGH_WALLS, 2); // Through Walls
             Driver.wpm<GlowMode>(ent + OFFSET_GLOW_MODE, { 0, 118, 100, 100 });
             Color itemColor = { 0, 0, 255 };
             // 0x30 = "mdl/weapons/at_rifle/w_at_rifle.rmdl"
@@ -231,7 +255,7 @@ struct GlowFade {
 
 void Modules::NewPlayerGlow()
 {
-    if (!globals.playerGlow || globals.playerGlowStyles[globals.playerGlowStyle] != "Advanced" || !Player::IsPlayer(globals.localPlayer))
+    if (!globals.playerGlow || globals.playerGlowStyles[globals.playerGlowStyle] != xorstr_("Advanced") || !Player::IsPlayer(globals.localPlayer))
         return;
 
     int localTeam = Driver.rpm<int>(globals.localPlayer + OFFSET_TEAM);
@@ -240,7 +264,7 @@ void Modules::NewPlayerGlow()
         if (ent == NULL) continue;
 
         std::string entName = Driver.ReadString(ent + OFFSET_NAME);
-        if (entName == "player" || Player::IsPlayer(ent) || Player::IsDummy(ent)) {
+        if (entName == xorstr_("player") || Player::IsPlayer(ent) || Player::IsDummy(ent)) {
             float currentEntityTime = 60000.f;
             GlowMode mode = { 101, 102, 50, 100 };
             vec3 color;
@@ -281,8 +305,8 @@ void Modules::NewPlayerGlow()
             Driver.wpm<float>(ent + OFFSET_GLOW_DISTANCE, 40000.f);
             Driver.wpm<float>(ent + 0x3A4, currentEntityTime);
             currentEntityTime -= 1.f;
-            Driver.wpm<int>(ent + 0x3C8, 1);
-            Driver.wpm<int>(ent + 0x3D0, 1);
+            Driver.wpm<int>(ent + OFFSET_GLOW_ENABLE, 1);
+            Driver.wpm<int>(ent + OFFSET_GLOW_THROUGH_WALLS, 1);
             //Driver.wpm<GlowFade>(ent + 0x388, { 872415232, 872415232, currentEntityTime, currentEntityTime, currentEntityTime, currentEntityTime });
         }
     }
@@ -290,7 +314,7 @@ void Modules::NewPlayerGlow()
 
 void Modules::PlayerGlow()
 {
-    if (!globals.playerGlow || globals.playerGlowStyles[globals.playerGlowStyle] != "Normal" || !Player::IsPlayer(globals.localPlayer))
+    if (!globals.playerGlow || globals.playerGlowStyles[globals.playerGlowStyle] != xorstr_("Normal") || !Player::IsPlayer(globals.localPlayer))
         return;
 
     for (int i = 0; i < 100; i++) {
@@ -298,8 +322,8 @@ void Modules::PlayerGlow()
         if (ent == NULL) continue;
 
         if (Player::IsPlayer(ent) || (globals.dummyGlow && Player::IsDummy(ent))) {
-            Driver.wpm<int>(ent + 0x3C8, 1); // Enable/Disable
-            Driver.wpm<int>(ent + 0x3D0, 2); // Through Walls
+            Driver.wpm<int>(ent + OFFSET_GLOW_ENABLE, 1); // Enable/Disable
+            Driver.wpm<int>(ent + OFFSET_GLOW_THROUGH_WALLS, 2); // Through Walls
             Driver.wpm<GlowMode>(ent + 0x2C4, { 101, 102, 50, 100 });
             Color writtenColor = globals.playerGlowColor * 255;
 
@@ -350,7 +374,7 @@ void Modules::DrawHealthbars(float x, float y, float width, float height, int th
 float lastTimeScale = 1.f;
 void Modules::RapidFire()
 {
-    if (!globals.rapidFire || !Player::IsPlayer(globals.localPlayer) || !GetAsyncKeyState(VK_LBUTTON)) {
+    if (!globals.rapidFire || !Player::IsPlayer(globals.localPlayer) || !GetAsyncKeyState(VK_LBUTTON) || GetForegroundWindow() != globals.hWnd) {
         if (lastTimeScale != 1.f)
             Driver.wpm<float>(globals.moduleBase + 0x01cd0078 + 0x18, 1);
         lastTimeScale = 1.f;
@@ -360,14 +384,14 @@ void Modules::RapidFire()
     uintptr_t currentWeapon = Driver.rpm<uintptr_t>(globals.moduleBase + OFFSET_ENTITYLIST + (actWeaponID << 5));
 
     int ammoInClip = Driver.rpm<int>(currentWeapon + 0x16c4);
-    printf("%i\n", ammoInClip);
     if (ammoInClip <= 0) return;
 
     Driver.wpm<float>(globals.moduleBase + 0x01cd0078 + 0x18, globals.rapidFireSpeed);
     lastTimeScale = globals.rapidFireSpeed;
 }
 
-float entNewVisTime = 0;
+// There is one line in here that causes the aimbot to break, this is an anti-pasting measure. Good luck and have fun.
+// Note: No. I will not help you find or fix it. Stop asking.
 float entOldVisTime[NUM_ENT_ENTRIES];
 void Modules::Aimbot()
 {
@@ -392,20 +416,14 @@ void Modules::Aimbot()
     if ((!globals.aimbot || !Player::IsPlayer(globals.localPlayer)) && !GetAsyncKeyState(aimKey))
         return;
 
+    // TODO: Review this, it may be able to be moved ouside of the aimbot loop causing less allocations and deallocations
     ImGuiIO& io = ImGui::GetIO();
     float screenWeight = io.DisplaySize.x;
     float screenHeight = io.DisplaySize.y;
 
-    // Variables
-    vec2 crosshair = { screenWeight / 2, screenHeight / 2 };
-
-    int entX = 0;
-    int entY = 0;
-
-    // Before entity loop starts
     float closestDist = 99999.f;
-    vec2 closestPlayer = { 99999.f, 99999.f };
     vec3 closestPlayerVec3 = { 0.f, 0.f, 0.f };
+    int localTeamID = Driver.rpm<int>(globals.localPlayer + OFFSET_TEAM);
 
     /*
     Bones:
@@ -419,7 +437,7 @@ void Modules::Aimbot()
     9: Heart
     */
 
-    for (int i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 100; i++) {
         if (globals.entityList.size() <= i) break; // If the entityList updates while we're looping through it the size could change.
 
         uintptr_t targetEnt = globals.entityList[i];
@@ -427,15 +445,14 @@ void Modules::Aimbot()
         
         std::string entSignifier = Player::GetSignifier(targetEnt);
         
-        if ((entSignifier != "npc_dummie" && entSignifier != "player") || targetEnt == globals.localPlayer) continue; // if ((notDummy and notPlayer) or isSelf) continue;
+        if ((entSignifier != xorstr_("npc_dummie") && entSignifier != xorstr_("player")) || targetEnt == globals.localPlayer) continue; // if ((notDummy and notPlayer) or isSelf) continue;
 
         vec3 aimPos = Util::GetBonePos(targetEnt, 7); // Neck bone
         aimPos.z += globals.aimbotOffset;
         
-        // Aimbot find closest target
+        // Target movement prediction
         uintptr_t actWeaponID = Driver.rpm<uintptr_t>(globals.localPlayer + OFFSET_CURRENT_WEAPON) & 0xFFFF;
         uintptr_t currentWeapon = Driver.rpm<uintptr_t>(globals.moduleBase + OFFSET_ENTITYLIST + (actWeaponID << 5));
-
         float bulletSpeed = Driver.rpm<float>(currentWeapon + OFFSET_BULLET_SPEED);
         float bulletGrav = Driver.rpm<float>(currentWeapon + OFFSET_BULLET_GRAVITY);
         if (bulletSpeed > 1.f)
@@ -448,29 +465,19 @@ void Modules::Aimbot()
 
         // Convert to screen position
         vec2 screenAimPos;
-        Util::WorldToScreen(aimPos, screenAimPos);
-        if (screenAimPos.y <= 0.f)
+        if (Util::WorldToScreen(aimPos, screenAimPos)) // If the target is off-screen don't continue
             continue;
 
-        // Get entity total visible time
-        entNewVisTime = Driver.rpm<float>(targetEnt + OFFSET_VISIBLE_TIME);
+        float entNewVisTime = Driver.rpm<float>(targetEnt + OFFSET_VISIBLE_TIME); // The total amount of time an entity has been visible
+        int targetTeamID = Driver.rpm<int>(targetEnt + OFFSET_TEAM);
 
-        // Get entity knocked state
-        int entKnockedState = Driver.rpm<int>(targetEnt + OFFSET_BLEED_OUT_STATE);
-
-        // Get our team ID
-        int playerTeamID = Driver.rpm<int>(globals.localPlayer + OFFSET_TEAM);
-
-        // Get their team ID
-        int entTeamID = Driver.rpm<int>(targetEnt + OFFSET_TEAM);
-
-        if (entTeamID != playerTeamID) {
-            // Entity is enemy
+        // Entity is enemy
+        if (targetTeamID != localTeamID) {
             if (entNewVisTime != entOldVisTime[i]) {
+                int entKnockedState = Driver.rpm<int>(targetEnt + OFFSET_BLEED_OUT_STATE);
                 // If enemy not knocked
-                if (entKnockedState == 0 || entSignifier == "npc_dummie") {
+                if (entKnockedState == 0 || entSignifier == xorstr_("npc_dummie")) {
                     if (Util::Dist2D({ screenWeight / 2, screenHeight / 2 }, screenAimPos) < globals.aimbotFOV && Util::Dist2D({ screenWeight / 2, screenHeight / 2 }, screenAimPos) < closestDist) {
-                        closestPlayer = screenAimPos;
                         closestPlayerVec3 = aimPos;
                         closestDist = Util::Dist2D({ screenWeight / 2, screenHeight / 2 }, screenAimPos);
                     }
@@ -480,10 +487,9 @@ void Modules::Aimbot()
         }
     }
 
-    // After entity loop ends
-    globals.aimbotting = closestPlayer.x != 99999.f && GetAsyncKeyState(aimKey);
-    if (closestPlayer.x != 99999.f && GetAsyncKeyState(aimKey)) { // We found a player and are still aimbotting
-        // For some reason you have to remove recoil here
+    // Found a player and still aimbotting
+    globals.aimbotting = closestDist != 99999.f && GetAsyncKeyState(aimKey);
+    if (globals.aimbotting) {
         vec3 cameraPos = Driver.rpm<vec3>(globals.localPlayer + OFFSET_CAMERAPOS);
         vec3 viewAngle = Driver.rpm<vec3>(globals.localPlayer + OFFSET_VIEWANGLES);
         vec3 targetAngle = Util::CalcAngle(cameraPos, closestPlayerVec3);
@@ -491,6 +497,7 @@ void Modules::Aimbot()
         vec3 newAngle = viewAngle + diff / (globals.aimbotSmoothness / 100.f);
 
         if (globals.rcs) {
+            // We have to do no-recoil here because Modules::NoRecoil() stops working whenever the aimbot is writing the view angles
             vec3 oldAngle = Driver.rpm<vec3>(globals.localPlayer + OFFSET_VIEWANGLES);
             vec3 punchAngle = Driver.rpm<vec3>(globals.localPlayer + OFFSET_AIMPUNCH);
             vec3 breathAngle = Driver.rpm<vec3>(globals.localPlayer + OFFSET_BREATH_ANGLES);
@@ -499,8 +506,10 @@ void Modules::Aimbot()
             newAngle -= breathAngle * (globals.rcsIntensity / 100.f);
             newAngle -= (punchAngle * 0.05f) * (globals.rcsIntensity / 100.f);
             newAngle += oldAngle * (globals.rcsIntensity / 100.f);
-            oldPunch = punchAngle; // do this so the rcs doesnt jump down after unlocking from the enemy
+            // do this so the rcs doesnt jump down after unlocking from the enemy
+            oldPunch = punchAngle;
         }
+        // Normalize to prevent bans for invalid angles.
         newAngle.Normalize();
 
         Driver.wpm<vec3>(globals.localPlayer + OFFSET_VIEWANGLES, newAngle);

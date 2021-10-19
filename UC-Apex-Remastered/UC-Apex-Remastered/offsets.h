@@ -43,3 +43,5 @@
 #define OFFSET_GLOW_DISTANCE		0x3B4
 #define OFFSET_GLOW_COLOR			0x1D0 // m_highlightParams + 0x18
 #define OFFSET_GLOW_MODE			0x2C4 // m_highlightFunctionBits + 0x4
+#define OFFSET_GLOW_ENABLE			0x3C8
+#define OFFSET_GLOW_THROUGH_WALLS	0x3D0

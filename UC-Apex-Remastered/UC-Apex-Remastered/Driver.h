@@ -93,8 +93,8 @@ public:
 		type tmp;
 		if (ReadRaw(readAddress, (UINT_PTR)&tmp, sizeof(type)))
 			return tmp;
-		/*else
-			return { 0 };*/
+		else
+			return { NULL };
 	}
 
 	template<class type>
@@ -116,11 +116,10 @@ public:
 	{
 		std::string str = "";
 		std::vector<char> chars(maxLength);
-
 		ReadRaw(addr, (uintptr_t)chars.data(), maxLength);
 		
 		// Loop through all the characters untill we find a null byte indicating the end of a string
-		for (int i = 0; i < chars.size(); i++) {
+		for (size_t i = 0; i < chars.size(); i++) {
 			if (chars[i] == '\0') break; 
 			str.push_back(chars[i]);
 		}

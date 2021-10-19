@@ -20,19 +20,6 @@ void aimbotLoop() {
 	}
 }
 
-// This function is a good concept but I'm not sure how to do it correctly in cpp, Current issue is that func is undefined or something and causes it to crash...
-auto loop(void(*func)())	
-{
-	return [&]() -> void
-	{
-		while (true)
-		{
-			func();
-			Sleep(1);
-		}
-	};
-}
-
 int main(int argCount, char** argVector)
 {
 	srand(time(NULL)); // Seed random on start
@@ -108,7 +95,7 @@ int main(int argCount, char** argVector)
 		return 0;
 	}
 
-	// start render thread
+	// Seperate threads for rendering, aimbotting, recoil for maximum speed
 	std::thread(overlay::Render).detach();
 	std::thread(aimbotLoop).detach();
 	std::thread(rcsLoop).detach();
@@ -119,10 +106,9 @@ int main(int argCount, char** argVector)
 
 	Driver.wpm<int>(globals.moduleBase + OFFSET_DISABLE_BLOOM + 0x6C, 1);
 
-	while (!GetAsyncKeyState(VK_END)) // run the main logic of the cheat until the user presses end
+	while (!GetAsyncKeyState(VK_END)) // Press 'END' to kill the cheat
 	{
 		Modules::Run();
-
 		Sleep(1);
 	}
 

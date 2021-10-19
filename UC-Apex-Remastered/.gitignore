@@ -33,9 +33,7 @@
 *.tlog
 
 .vs/
-x64/Release/*
-x64/Debug/*
+x64/
 UC-Apex-Remastered/x64/
 Driver/x64/
-!x64/Release/kdmapper.exe
 UC-Apex-Remastered/Debugging/

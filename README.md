@@ -1,5 +1,5 @@
 # apex-cheating
-I'm releasing all my source and tools to do with Apex Legends today because I generally feel that cheating has brought a general negative impact upon me and I feel that leaving this community and quitting cheating will result in a better mental state for me on the average day.
+I'm releasing all my source and tools to do with Apex Legends today because idk man.
 
 # UC-Apex-Remastered
 An Apex Legends cheat based off the BaconToaster's [UC-Apex-Remastered](https://github.com/BaconToaster/UC-Apex-Remastered). However is basically entirely rewritten and has little resemblence to the original.

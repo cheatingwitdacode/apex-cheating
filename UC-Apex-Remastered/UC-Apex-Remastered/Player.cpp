@@ -39,7 +39,7 @@ bool Player::IsDummy(uintptr_t ent)
 std::string Player::GetSignifier(uintptr_t ent)
 {
 	uintptr_t sigAddr = Driver.rpm<uintptr_t>(ent + OFFSET_SIGNIFIER);
-	return Driver.ReadString(sigAddr);
+	return Driver.ReadString(sigAddr, 0xF);
 }
 
 bool Player::IsAlive(uintptr_t player)
